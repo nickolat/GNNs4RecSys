@@ -1,0 +1,35 @@
+experiment:
+  backend: pytorch
+  data_config:
+    strategy: fixed
+    train_path: ../data/{0}/split_lightgcl/train.tsv
+    test_path: ../data/{0}/split_lightgcl/test.tsv
+  dataset: gowalla
+  top_k: 20
+  evaluation:
+    cutoffs: [20]
+    simple_metrics: [Recall, nDCG]
+  gpu: 0
+  external_models_path: ../external/models/__init__.py
+  models:
+    external.LightGCL:
+      meta:
+        hyper_opt_alg: grid
+        verbose: True
+        save_weights: False
+        validation_rate: 1
+        validation_metric: Recall@20
+        restore: False
+      lr: 1e-3
+      epochs: 100
+      factors: 64
+      batch_size: 4096  # inter_batch (training)
+      #l_w:       # lambda2
+      #reg_cl:    # lambda1
+      lambda1: 0.2  # the regularization weight for CL loss.
+      lambda2: 0.0  # the L2 regularization weight. (0 for Gowalla)
+      n_layers: 2
+      temp: 0.2
+      dropout: 0.0
+      q: 5   # Rank for SVD
+      seed: 42
