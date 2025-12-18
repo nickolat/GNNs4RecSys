@@ -23,3 +23,4 @@ for _backend in sys.modules["external"].backend:
         from .simgcl import SimGCL
         from .xsimgcl import XSimGCL
         from .lightgcl import LightGCL
+        from .graphau import GraphAU
