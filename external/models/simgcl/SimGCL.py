@@ -36,18 +36,18 @@ class SimGCL(RecMixin, BaseRecommenderModel):
     .. code:: yaml
 
       models:
-        SGL:
+        external.SimGCL:
           meta:
             save_recs: True
-          lr: 0.0005
-          epochs: 50
-          batch_size: 512
+          lr: 0.001
+          epochs: 20
           factors: 64
-          batch_size: 256
-          l_w: 0.1
-          n_layers: 2
-          eps: 0.2
-          reg_cl: 0.01
+          batch_size: 2048
+          l_w: 1e-4
+          n_layers: 3
+          eps: 0.1
+          reg_cl: 0.5
+          seed: 42
     """
 
     @init_charger

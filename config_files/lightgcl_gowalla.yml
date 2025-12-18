@@ -23,13 +23,11 @@ experiment:
       lr: 1e-3
       epochs: 100
       factors: 64
-      batch_size: 4096  # inter_batch (training)
-      #l_w:       # lambda2
-      #reg_cl:    # lambda1
-      lambda1: 0.2  # the regularization weight for CL loss.
-      lambda2: 0.0  # the L2 regularization weight. (0 for Gowalla)
+      batch_size: 4096
+      lambda1: 0.2
+      lambda2: 0.0
       n_layers: 2
       temp: 0.2
       dropout: 0.0
-      q: 5   # Rank for SVD
+      q: 5
       seed: 42

@@ -1,7 +1,6 @@
 from tqdm import tqdm
 import numpy as np
 import torch
-import os
 import scipy.sparse as sp
 
 from .custom_sampler import TrnData
@@ -16,12 +15,48 @@ import random
 class LightGCL(RecMixin, BaseRecommenderModel):
     r"""
     LightGCL: Simple Graph Contrastive Learning for Recommendation
+
+    For further details, please refer to the `paper <https://arxiv.org/abs/2302.08191>`_
+
+    Args:
+        lr: Learning rate
+        epochs: Number of epochs
+        factors: Number of latent factors
+        batch_size: Batch size for training (inter_batch)
+        n_layers: Number of stacked propagation layers
+        lambda1: Regularization weight for CL loss
+        lambda2: L2 regularization weight
+        temp: Temperature parameter
+        q: Rank for SVD
+        dropout: Dropout rate
+
+    To include the recommendation model, add it to the config file adopting the following pattern:
+
+    .. code:: yaml
+
+      models:
+        external.LightGCL:
+          meta:
+            save_recs: True
+          lr: 1e-3
+          epochs: 100
+          factors: 64
+          batch_size: 4096
+          lambda1: 0.2
+          lambda2: 0.0
+          n_layers: 2
+          temp: 0.2
+          dropout: 0.0
+          q: 5
+          seed: 42
+
     """
 
     @init_charger
     def __init__(self, data, config, params, *args, **kwargs):
         if self._batch_size < 1:
             self._batch_size = self._num_users
+        ######################################
 
         self._params_list = [
             ("_learning_rate", "lr", "lr", 0.001, float, None),
@@ -31,7 +66,7 @@ class LightGCL(RecMixin, BaseRecommenderModel):
             ("_lambda2", "lambda2", "lambda2", 1e-7, float, None),
             ("_temp", "temp", "temp", 0.2, float, None),
             ("_dropout", "dropout", "dropout", 0.0, float, None),
-            ("_q", "q", "q", 5, int, None)  # Rank for SVD
+            ("_q", "q", "q", 5, int, None)
         ]
         self.autoset_params()
 
@@ -50,16 +85,13 @@ class LightGCL(RecMixin, BaseRecommenderModel):
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        # --- Data Preparation (Mirroring main.py logic) ---
-        print("Preparing data and performing SVD for LightGCL...")
-
-        # Get Sparse Matrix
+        # Get sparse matrix
         train_matrix = self._data.sp_i_train.copy()  # scipy csr_matrix
 
         train_coo = train_matrix.tocoo()
         #self.train_mask = (train_coo != 0).astype(np.float32)  # binary mask for training data
 
-        # Normalize Adjacency Matrix
+        # Normalize adjacency matrix
         rowD = np.array(train_coo.sum(1)).squeeze()
         colD = np.array(train_coo.sum(0)).squeeze()
 
@@ -68,14 +100,14 @@ class LightGCL(RecMixin, BaseRecommenderModel):
             col = train_coo.col[i]
             train_coo.data[i] /= pow(rowD[row] * colD[col], 0.5)
 
-        # Construct Data Loader (original code)
+        # Data loader (original code)
         self.train_loader = torch.utils.data.DataLoader(TrnData(train_coo), batch_size=self._batch_size, shuffle=True, num_workers=0)
 
-        # Create Normalized Torch Sparse Tensor
+        # Normalized torch sparse tensor
         self.adj_norm = self.scipy_sparse_mat_to_torch_sparse_tensor(train_coo)
         self.adj_norm = self.adj_norm.coalesce().to(self.device)
 
-        # Perform SVD Lowrank
+        # SVD lowrank
         svd_u, s, svd_v = torch.svd_lowrank(self.adj_norm, q=self._q)
         self.u_mul_s = (svd_u @ (torch.diag(s))).to(self.device)
         self.v_mul_s = (svd_v @ (torch.diag(s))).to(self.device)
@@ -84,9 +116,8 @@ class LightGCL(RecMixin, BaseRecommenderModel):
         self.vt = svd_v.T.to(self.device)
 
         del s, svd_u, svd_v
-        print("SVD computation finished.")
+        #print("SVD computation finished")
 
-        # --- Initialize Model ---
         self._model = LightGCLModel(
             num_users=self._num_users,
             num_items=self._num_items,
@@ -117,20 +148,13 @@ class LightGCL(RecMixin, BaseRecommenderModel):
         if self._restore:
             return self.restore_weights()
 
-        #random.seed(self._seed)
         for it in self.iterate(self._epochs):
             loss = 0
             steps = 0
 
-            # The original LightGCL calculates neg_sampling once per epoch in TrnData dataset.
             self.train_loader.dataset.neg_sampling()
             with tqdm(total=int(self._data.transactions / self._batch_size), disable=not self._verbose) as t:
                 for _, batch in enumerate(self.train_loader):
-                # for batch in next_batch_pairwise(data=self.edge_index,
-                #                                  num_items=self._num_items,
-                #                                  batch_size=self._batch_size,
-                #                                  ui_dict=self.ui_dict,
-                #                                  seed=self._seed):
                     steps += 1
                     current_loss = self._model.train_step(batch)
                     loss += current_loss
@@ -147,34 +171,20 @@ class LightGCL(RecMixin, BaseRecommenderModel):
         predictions_top_k_test = {}
         predictions_top_k_val = {}
 
-        # Set model to eval mode
         self._model.eval()
+        eval_batch_size = 256  # defined in the original parser
 
-        # smaller batch size (defined in the original parser)
-        eval_batch_size = 256
-
-        # In test phase, we just need the final embeddings E_u and E_i.
         with (torch.no_grad()):
-            #self._model.forward(is_training=False)
-
             for index, offset in enumerate(range(0, self._num_users, eval_batch_size)):
                 offset_stop = min(offset + self._batch_size, self._num_users)
                 uids = torch.arange(offset, offset_stop).long().to(self.device)
 
-                # Predict using dot product of embeddings stored in model
                 predictions = self._model.predict(uids)
-
-                ### masking from original code
-                # mask = self.train_mask[uids.cpu().numpy()].toarray()
-                # mask = torch.Tensor(mask).to(self.device)
-                # preds = preds * (1 - mask) - 1e8 * mask
-                # predictions = preds.argsort(descending=True)
 
                 recs_val, recs_test = self.process_protocol(k, predictions, offset, offset_stop)
                 predictions_top_k_val.update(recs_val)
                 predictions_top_k_test.update(recs_test)
 
-        # Reset to train mode
         self._model.train()
         return predictions_top_k_val, predictions_top_k_test
 

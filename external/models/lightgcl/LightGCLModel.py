@@ -21,17 +21,9 @@ class LightGCLModel(nn.Module):
                  ut,
                  vt,
                  adj_norm,
-                 random_seed):
+                 random_seed,
+                 name="LightGCL"):
         super().__init__()
-
-        # # set seed
-        # random.seed(random_seed)
-        # np.random.seed(random_seed)
-        # torch.manual_seed(random_seed)
-        # torch.cuda.manual_seed(random_seed)
-        # torch.cuda.manual_seed_all(random_seed)
-        # torch.backends.cudnn.deterministic = True
-        # torch.use_deterministic_algorithms(True)
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -49,7 +41,7 @@ class LightGCLModel(nn.Module):
         self.E_u_0 = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_users, embed_k)))
         self.E_i_0 = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_items, embed_k)))
 
-        # Input matrices (already on device from LightGCL class)
+        # Input matrices
         self.adj_norm = adj_norm
         self.u_mul_s = u_mul_s
         self.v_mul_s = v_mul_s
@@ -81,7 +73,6 @@ class LightGCLModel(nn.Module):
 
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
-    # --- Utils from original utils.py ---
     def sparse_dropout(self, mat, dropout):
         if dropout == 0.0:
             return mat
@@ -90,20 +81,8 @@ class LightGCLModel(nn.Module):
         size = mat.size()
         return torch.sparse.FloatTensor(indices, values, size).to(self.device)
 
-    ####### not used in original code
-    # def spmm(self, sp, emb):
-    #     sp = sp.coalesce()
-    #     cols = sp.indices()[1]
-    #     rows = sp.indices()[0]
-    #     col_segs = emb[cols] * torch.unsqueeze(sp.values(), dim=1)
-    #     result = torch.zeros((sp.shape[0], emb.shape[1])).to(self.device)
-    #     result.index_add_(0, rows, col_segs)
-    #     return result
-
-    # ------------------------------------------------------------------
 
     def forward(self, is_training=True):
-        # GNN Propagation & SVD Propagation
         for layer in range(1, self.n_layers + 1):
             # GNN propagation
             dropped_adj = self.sparse_dropout(self.adj_norm, self.dropout) if is_training else self.adj_norm
@@ -122,7 +101,7 @@ class LightGCLModel(nn.Module):
             self.E_u_list[layer] = self.Z_u_list[layer]
             self.E_i_list[layer] = self.Z_i_list[layer]
 
-        # Aggregate across layers (Sum)
+        # Aggregate across layers (sum)
         self.E_u = sum(self.E_u_list)
         self.E_i = sum(self.E_i_list)
 
@@ -133,9 +112,6 @@ class LightGCLModel(nn.Module):
 
     def train_step(self, batch):
         uids, pos, neg = batch
-        # uids = torch.tensor(uids).long().to(self.device)
-        # pos = torch.tensor(pos).long().to(self.device)
-        # neg = torch.tensor(neg).long().to(self.device)
         uids = uids.clone().detach().long().to(self.device)
         pos = pos.clone().detach().long().to(self.device)
         neg = neg.clone().detach().long().to(self.device)
@@ -145,7 +121,7 @@ class LightGCLModel(nn.Module):
         # Forward pass
         self.forward(is_training=True)
 
-        # LOSS
+        # Loss
         loss_s = self.calc_cl_loss(uids, iids)
         loss_r = self.calc_bpr_loss(uids, pos, neg)
         loss_reg = self.calc_reg_loss(self.lambda_2, self.parameters())
@@ -192,8 +168,6 @@ class LightGCLModel(nn.Module):
         return loss_reg * reg
 
     def predict(self, uids):
-        # Testing phase: dot product of final embeddings
-        # Note: We use the embeddings computed in the last forward pass
         preds = self.E_u[uids] @ self.E_i.T
         return preds
 
