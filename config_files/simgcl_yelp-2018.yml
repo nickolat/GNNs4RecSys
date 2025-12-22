@@ -28,4 +28,5 @@ experiment:
       n_layers: 3
       eps: 0.1
       reg_cl: 0.5
+      tau: 0.2
       seed: 42

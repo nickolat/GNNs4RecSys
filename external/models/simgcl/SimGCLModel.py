@@ -18,8 +18,9 @@ class SimGCLModel(torch.nn.Module, ABC):
                  eps,
                  reg_cl,
                  adj,
-                 random_seed,
+                 tau,
                  normalize,
+                 random_seed,
                  name="SimGCL",
                  **kwargs
                  ):
@@ -45,6 +46,7 @@ class SimGCLModel(torch.nn.Module, ABC):
         self.adj = adj
         self.eps = eps
         self.reg_cl = reg_cl
+        self.tau = tau
         self.normalize = normalize
 
         initializer = torch.nn.init.xavier_uniform_
@@ -86,8 +88,8 @@ class SimGCLModel(torch.nn.Module, ABC):
         i_idx = torch.unique(torch.Tensor(idx[1]).type(torch.long)).to(self.device)
         user_view_1, item_view_1 = self.propagate_embeddings(perturbed=True)
         user_view_2, item_view_2 = self.propagate_embeddings(perturbed=True)
-        user_cl_loss = self.InfoNCE(user_view_1[u_idx], user_view_2[u_idx], 0.2)
-        item_cl_loss = self.InfoNCE(item_view_1[i_idx], item_view_2[i_idx], 0.2)
+        user_cl_loss = self.InfoNCE(user_view_1[u_idx], user_view_2[u_idx], self.tau)
+        item_cl_loss = self.InfoNCE(item_view_1[i_idx], item_view_2[i_idx], self.tau)
         return user_cl_loss + item_cl_loss
 
     @staticmethod

@@ -30,6 +30,7 @@ class SimGCL(RecMixin, BaseRecommenderModel):
         n_layers: Number of stacked propagation layers
         eps: Perturbation rate
         reg_cl: Regularization for cl loss
+        tau: Temperature
 
     To include the recommendation model, add it to the config file adopting the following pattern:
 
@@ -47,6 +48,7 @@ class SimGCL(RecMixin, BaseRecommenderModel):
           n_layers: 3
           eps: 0.1
           reg_cl: 0.5
+          tau: 0.2
           seed: 42
     """
 
@@ -64,7 +66,8 @@ class SimGCL(RecMixin, BaseRecommenderModel):
             ("_reg_cl", "reg_cl", "reg_cl", 0.01, float, None),
             ("_n_layers", "n_layers", "n_layers", 1, int, None),
             ("_normalize", "normalize", "normalize", True, bool, None),
-            ("_eps", "eps", "eps", 0.2, float, None)
+            ("_eps", "eps", "eps", 0.2, float, None),
+            ("_tau", "tau", "tau", 0.2, float, None)
         ]
         self.autoset_params()
 
@@ -90,6 +93,7 @@ class SimGCL(RecMixin, BaseRecommenderModel):
             eps=self._eps,
             reg_cl=self._reg_cl,
             adj=self.adj,
+            tau=self._tau,
             normalize=self._normalize,
             random_seed=self._seed,
         )
