@@ -28,6 +28,6 @@ experiment:
       n_layers: 4
       eps: 0.2
       reg_cl: 0.2
-      l_star: 1
+      l_star: 2
       tau: 0.15
       seed: 42
