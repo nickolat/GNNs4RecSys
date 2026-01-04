@@ -2,11 +2,11 @@ experiment:
   backend: pytorch
   data_config:
     strategy: fixed
-    train_path: ../data/gowalla/split_graphau/train.tsv
-    validation_path: ../data/gowalla/split_graphau/val.tsv
-    test_path: ../data/gowalla/split_graphau/test.tsv
+    train_path: ../data/{0}/train.tsv
+    validation_path: ../data/{0}/validation.tsv
+    test_path: ../data/{0}/test.tsv
   binarize: True
-  dataset: gowalla
+  dataset: allrecipes
   top_k: 20
   evaluation:
     cutoffs: [20]
@@ -16,23 +16,23 @@ experiment:
   models:
     external.GraphAU:
       meta:
-        hyper_opt_alg: grid
+        hyper_opt_alg: tpe
+        hyper_max_evals: 20
         verbose: True
         save_weights: False
         save_recs: False
         validation_rate: 1
         validation_metric: Recall@20
         restore: False
-        optimize_internal_loss: True
-      lr: 0.1
+      lr: [ loguniform,  -5.29831736655, -2.30258509299]
       factors: 32
-      n_layers: 2
-      gamma_au: 1.7
-      alpha_n: 0.1
+      n_layers: [choice, [1, 2, 3, 4]]
+      gamma_au: [quniform, 0, 2, 0.1]
+      alpha_n: [quniform, 0, 2, 0.1]
+      weight_decay: [loguniform, -97.697414907, -4.6051701860]
       decaying_base: 1.4
-      weight_decay: 0.0
-      batch_size: 2048
-      epochs: 1000
+      batch_size: 256
+      epochs: 100
       normalize: True
       seed: 2022
       early_stopping:
