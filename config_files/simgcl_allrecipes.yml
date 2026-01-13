@@ -29,7 +29,7 @@ experiment:
       batch_size: 256
       l_w: 1e-4
       n_layers: [choice, [1, 2, 3, 4]]
-      eps: [loguniform, -4.6051701860, 0.6931471806]
-      reg_cl: [loguniform, -4.6051701860, 0.6931471806]
+      eps: [loguniform,  -97.697414907, 0.6931471806]
+      reg_cl: [loguniform,  -97.697414907, 0.6931471806]
       tau: 0.2
       seed: 42
