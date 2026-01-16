@@ -1,0 +1,29 @@
+experiment:
+  dataset: amazon-cds
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/amazon-cds.tsv
+
+  splitting:
+    save_on_disk: True
+    save_folder: data/amazon-cds/
+
+    test_splitting:
+      strategy: random_subsampling
+      test_ratio: 0.2
+      folds: 2
+
+    validation_splitting:
+      strategy: random_subsampling
+      test_ratio: 0.1
+      folds: 2
+
+  top_k: 20
+  evaluation:
+    simple_metrics: [Recall, nDCG]
+  models:
+    ItemKNN:
+      meta:
+        save_recs: False
+      neighbors: [50]
+      similarity: [cosine]
