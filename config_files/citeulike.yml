@@ -1,0 +1,27 @@
+experiment:
+  dataset: citeulike
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/citeulike.tsv
+
+  splitting:
+    save_on_disk: True
+    save_folder: data/citeulike/
+
+    test_splitting:
+      strategy: random_subsampling
+      test_ratio: 0.2
+
+    validation_splitting:
+      strategy: random_subsampling
+      test_ratio: 0.1
+
+  top_k: 20
+  evaluation:
+    simple_metrics: [Recall, nDCG]
+  models:
+    ItemKNN:
+      meta:
+        save_recs: False
+      neighbors: [50]
+      similarity: [cosine]
