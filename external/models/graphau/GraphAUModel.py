@@ -119,19 +119,7 @@ class GraphAUModel(torch.nn.Module, ABC):
         # L0 Uniformity
         uniform = (self.uniformity(user_e) + self.uniformity(item_e)) / 2
 
-        # High-order alignments
-        # Original code: loop range(2, layers + 1). i=2 means 1 hop agg.
-        # My all_embs: [0: L0, 1: L1, 2: L2 ...]
-        # i=2 (original) -> 1 hop -> all_embs[1]
-        
-        # The loop in original was: for i in range(2, layers + 1):
-        #   h_agg = get_embedding_aggregation(i) -> i-1 hops
-        #   align.append( ... layer 0 vs layer i-1 ...)
-        
-        # If n_layers = 2.
-        # Original: range(2, 3) -> i=2. i-1=1 hop.
-        # Calculates align between L0 and L1.
-        
+
         for k in range(1, self.n_layers): # range(1, 2) -> k=1.
             hk = all_embs[k] # Layer k embeddings
             guk, gik = torch.split(hk, [self.num_users, self.num_items], 0)

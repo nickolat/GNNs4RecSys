@@ -89,7 +89,6 @@ class LightGCL(RecMixin, BaseRecommenderModel):
         train_matrix = self._data.sp_i_train.copy()  # scipy csr_matrix
 
         train_coo = train_matrix.tocoo()
-        #self.train_mask = (train_coo != 0).astype(np.float32)  # binary mask for training data
 
         # Normalize adjacency matrix
         rowD = np.array(train_coo.sum(1)).squeeze()
@@ -100,7 +99,7 @@ class LightGCL(RecMixin, BaseRecommenderModel):
             col = train_coo.col[i]
             train_coo.data[i] /= pow(rowD[row] * colD[col], 0.5)
 
-        # Data loader (original code)
+        # Data loader original
         self.train_loader = torch.utils.data.DataLoader(TrnData(train_coo), batch_size=self._batch_size, shuffle=True, num_workers=0)
 
         # Normalized torch sparse tensor
@@ -116,7 +115,6 @@ class LightGCL(RecMixin, BaseRecommenderModel):
         self.vt = svd_v.T.to(self.device)
 
         del s, svd_u, svd_v
-        #print("SVD computation finished")
 
         self._model = LightGCLModel(
             num_users=self._num_users,

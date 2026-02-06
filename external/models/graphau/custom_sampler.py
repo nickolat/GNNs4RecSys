@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class Sampler:
     def __init__(self, indexed_ratings, seed=2022):
         np.random.seed(seed)
@@ -16,8 +15,7 @@ class Sampler:
         n_users = self._nusers
         ui_dict = self._ui_dict
         lui_dict = self._lui_dict
-        
-        # Randomly select users for the batch
+
         users = np.random.randint(0, n_users, events)
 
         def sample(current):
@@ -25,7 +23,7 @@ class Sampler:
             ui = sorted(ui_dict[u])
             lui = lui_dict[u]
             if lui == 0: # Handle edge case of user with no items equivalent to infinite loop check
-                 # Pick another user
+                 # pick another user
                 u = np.random.randint(0, n_users)
                 return sample(current) 
             

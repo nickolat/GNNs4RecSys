@@ -1,7 +1,6 @@
 import numpy as np
 import torch.utils.data as data
 
-
 class TrnData(data.Dataset):
     def __init__(self, coomat):
         self.rows = coomat.row
