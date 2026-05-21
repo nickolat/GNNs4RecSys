@@ -1,0 +1,23 @@
+experiment:
+  dataset: gowalla
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/peng/train_full.tsv
+
+  splitting:
+    save_on_disk: True
+    save_folder: data/gowalla/peng/splits/
+
+    test_splitting:
+      strategy: random_subsampling
+      test_ratio: 0.05
+
+  top_k: 20
+  evaluation:
+    simple_metrics: [Recall, nDCG]
+  models:
+    ItemKNN:
+      meta:
+        save_recs: False
+      neighbors: [50]
+      similarity: [cosine]

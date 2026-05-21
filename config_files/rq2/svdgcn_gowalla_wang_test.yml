@@ -1,0 +1,34 @@
+experiment:
+  backend: pytorch
+  data_config:
+    strategy: fixed
+    train_path: ../data/{0}/wang/train_full.tsv
+    test_path: ../data/{0}/wang/test.tsv
+  binarize: True
+  dataset: gowalla
+  top_k: 20
+  evaluation:
+    cutoffs: [20]
+    simple_metrics: [Recall, nDCG]
+  gpu: 0
+  external_models_path: ../external/models/__init__.py
+  models:
+    external.SVDGCN:
+      meta:
+        verbose: True
+        save_weights: False
+        save_recs: False
+        validation_rate: 14
+        validation_metric: Recall@20
+        restore: False
+      factors: 64
+      epochs: 14
+      batch_size: 256
+      l_w: 0.01
+      lr: 5.930606990702087
+      req_vec: 140
+      beta: 3
+      alpha: 3
+      coef_u: 6.781586251600906e-08
+      coef_i: 1.5741714210714085e-07
+      seed: 123
