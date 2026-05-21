@@ -27,9 +27,9 @@ experiment:
       epochs: 15
       batch_size: 256
       l_w: 0.01
-      lr: [ loguniform, 0, 2.48490664979 ]
-      req_vec: [ quniform, 20,60, 5 ]
-      beta: [ quniform, 1, 3, 1 ]
+      lr: [ loguniform, 1.38629436112, 2.48490664979 ]
+      req_vec: [ quniform, 60, 150, 5 ]
+      beta: [ quniform, 1, 7, 1 ]
       alpha: [ quniform, 1, 4, 1 ]
       coef_u: [ loguniform, -32.2361913019, 0.0953101798 ]
       coef_i: [ loguniform, -32.2361913019, 0.0953101798 ]
