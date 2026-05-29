@@ -3,7 +3,7 @@
 This is the official repository for the paper 
 "_GNN-based Recommender Systems Reproducibility_".
 
-This repository is heavily dependent on the framework **Elliot**, 
+This repository is heavily dependent on the **Elliot** framework, 
 so we suggest you refer to the official GitHub [page](https://github.com/sisinflab/elliot) 
 and [documentation](https://elliot.readthedocs.io/en/latest/).
 
@@ -11,9 +11,9 @@ and [documentation](https://elliot.readthedocs.io/en/latest/).
 
 We implemented and tested our models using `Python 3.10.12` and `PyTorch==2.1.0`, 
 with CUDA `12.1`. 
-Additionally, some of graph-based models require `PyTorch Geometric`, 
+Additionally, some graph-based models require `PyTorch Geometric`, 
 which is compatible with the versions of CUDA and `PyTorch` we indicated above.
-Specifically, you may create a virtual environment using with the 
+Specifically, you may create a virtual environment with the 
 `requirements.txt` file we included in this repository.
 
 
@@ -23,9 +23,9 @@ Specifically, you may create a virtual environment using with the
 
 For our reproducibility study we used **Gowalla**, **Yelp 2018**, and **Amazon Book** datasets.
 In `./data/` we provide the tsv files for all the datasets in this repo, 
-already in a format compatible for Elliot (i.e., tsv file with user/item).
+already in a format compatible with Elliot (i.e., tsv file with user/item).
 
-The original links may be found here, where the train/test splitting has already been provided:
+The original links can be found here:
 [Gowalla](https://github.com/xiangwang1223/neural_graph_collaborative_filtering/tree/master/Data/gowalla), 
 [Yelp 2018](https://github.com/kuandeng/LightGCN/tree/master/Data/yelp2018), 
 [Amazon Book](https://github.com/xiangwang1223/neural_graph_collaborative_filtering/tree/master/Data/amazon-book).
@@ -34,7 +34,7 @@ After downloading, create three folders ```./data/{dataset_name}```,
 one for each dataset. Then, run the script ```./map_dataset.py```, 
 by changing the name of the dataset within the script itself. 
 It will generate the train/test files for each dataset in a format compatible 
-for Elliot.
+with Elliot.
 
 ### Additional datasets
 In `./data/gowalla/` we provide the train/validation/test splittings for the four different versions
@@ -73,7 +73,7 @@ in order to ensure the complete reproducibility of the experiments.
 * The hyper-parameter settings for the models are available in the 
 `./config_files/` folder, where all configuration files are stored
 and named in this way: `<model>_<dataset_name>.yml`.
-* Depending on the model, the dataset and your workstation, 
+* Depending on the model, dataset and your workstation, 
 the training and evaluation could take long time. 
 * After the training and evaluation are done, you will find all performance files 
 in the folder `./results/<dataset_name>/performance/`.
